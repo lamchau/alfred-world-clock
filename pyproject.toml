@@ -8,11 +8,7 @@ authors = [
     { name = "Fede Calendino", email = "fede@calendino.com" },
 ]
 requires-python = ">=3.9"
-dependencies = [
-    "alfred-pyflow>=0.4.6",
-    "pytz>=2023.3",
-    "pytimeparse>=1.1.8",
-]
+dependencies = []
 
 [project.urls]
 Documentation = "https://github.com/lamchau/alfred-world-clock/blob/main/README.md"
