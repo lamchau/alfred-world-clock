@@ -1,7 +1,8 @@
-from datetime import datetime
-from typing import Dict, Tuple, List
+from __future__ import annotations
 
-import pytz as tz
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
 from pyflow import Workflow
 
 import formatters
@@ -9,6 +10,9 @@ import formatters
 
 def get_formatter(workflow: Workflow) -> callable:
     timestamp_format = workflow.env.get("TIMESTAMP_FORMAT", "FORMAT_DEFAULT")
+    if timestamp_format == "FORMAT_CUSTOM":
+        fmt = workflow.env.get("TIMESTAMP_FORMAT_CUSTOM", "%H:%M:%S (%B %d, %Y)")
+        return formatters.custom(fmt)
     return formatters.FORMATTERS[timestamp_format]
 
 
@@ -24,21 +28,15 @@ def get_icon(timezone: str, now: datetime, home_tz: str) -> str:
     return f"img/icons/{utc_offset_hours}.png"
 
 
-def get_home(workflow: Workflow) -> Tuple[str, datetime]:
+def get_home(workflow: Workflow) -> tuple[str, datetime]:
     home_tz = workflow.env["HOME"][3:].replace("__", "/")
 
-    home_now = (
-        datetime.utcnow()
-        .replace(tzinfo=tz.utc)
-        .astimezone(
-            tz=tz.timezone(home_tz),
-        )
-    )
+    home_now = datetime.now(timezone.utc).astimezone(ZoneInfo(home_tz))
 
     return home_tz, home_now
 
 
-def get_name_replacements(workflow: Workflow):
+def get_name_replacements(workflow: Workflow) -> dict[str, str]:
     sep = "//"
 
     name_replacements = {}
@@ -64,7 +62,7 @@ def get_name_replacements(workflow: Workflow):
     return name_replacements
 
 
-def get_timezones(workflow: Workflow, now: datetime, include: List[str] = None) -> Dict[str, datetime]:
+def get_timezones(workflow: Workflow, now: datetime, include: list[str] | None = None) -> dict[str, datetime]:
     timezones = set(
         map(
             lambda item: item[0][3:].replace("__", "/"),
@@ -78,12 +76,12 @@ def get_timezones(workflow: Workflow, now: datetime, include: List[str] = None) 
     timezones.update(include or [])
 
     return {
-        timezone: now.replace(
-            tzinfo=tz.utc,
+        tz_name: now.replace(
+            tzinfo=timezone.utc,
         ).astimezone(
-            tz=tz.timezone(timezone),
+            ZoneInfo(tz_name),
         )
-        for timezone in timezones
+        for tz_name in timezones
     }
 
 
