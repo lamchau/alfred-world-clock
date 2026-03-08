@@ -3,22 +3,22 @@
 This documentation is for those who want to setup this workflow locally to do some work on it. PRs welcomed!
 
 
-### poetry
+### uv
 
-This workflow uses a tool called [poetry](https://python-poetry.org) for depencency management. 
-To install poetry in your local enviroment follow [these instructions](https://python-poetry.org/docs/#installation).
+This workflow uses [uv](https://docs.astral.sh/uv/) for dependency management.
+To install uv in your local environment follow [these instructions](https://docs.astral.sh/uv/getting-started/installation/).
 
 
 ### dependencies
 
-Once you have poetry installed, the next thing is to fetch all of this project's dependencies using the command [poetry install](https://python-poetry.org/docs/cli/#install). 
-This command will use the `pyproject.toml` file to create a virtual env and install all the necesary libraries from pypi.
+Once you have uv installed, the next thing is to fetch all of this project's dependencies using the command `uv sync`.
+This command will use the `pyproject.toml` file to create a virtual env and install all the necessary libraries from PyPI.
 
 
 ### release
 
-To import the current state of the workflow into Alfred, you can use the script `./scripts/release.sh`. 
-This will package all the required components to run the workflow in Alfred without any external depencencies.
+To import the current state of the workflow into Alfred, you can use the script `./scripts/release.sh`.
+This will package all the required components to run the workflow in Alfred without any external dependencies.
 
 At the end, you'll be automatically prompted to import it into Alfred.
 
