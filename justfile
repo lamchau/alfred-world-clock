@@ -21,3 +21,9 @@ test:
 
 # run all checks (format + test)
 check: format test
+
+# download latest IANA tzdata, regenerate flags and update info.plist
+update-tz:
+    @echo "updating timezone data..."
+    uv run python3 tzdata/update.py
+    @echo "update-tz: done"
