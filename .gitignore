@@ -1,4 +1,5 @@
-*pyc
+__pycache__/
+*.pyc
 .DS_Store
 
 tmp.py
@@ -13,3 +14,6 @@ releases/
 .venv/
 .idea/
 .tmp/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
