@@ -17,6 +17,13 @@ def iso8601_without_microseconds(now: datetime) -> str:
     return now.replace(microsecond=0).isoformat()
 
 
+def custom(fmt: str):
+    def formatter(now: datetime) -> str:
+        return now.strftime(fmt)
+
+    return formatter
+
+
 FORMATTERS = {
     "FORMAT_DEFAULT": default_24hs,
     "FORMAT_DEFAULT_12HS": default_12hs,
