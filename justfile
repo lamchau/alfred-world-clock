@@ -12,3 +12,12 @@ format:
 # sync dependencies
 sync:
     uv sync
+
+# run tests
+test:
+    @echo "running tests..."
+    uv run pytest
+    @echo "test: done"
+
+# run all checks (format + test)
+check: format test
