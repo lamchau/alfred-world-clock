@@ -56,31 +56,59 @@ class Item:
             path=self.cache.download_image(url=url, filename=filename),
         )
 
+    def _set_mod(
+        self,
+        name: str,
+        arg: str | None = None,
+        subtitle: str | None = None,
+        valid: bool = True,
+        variables: dict[str, str] | None = None,
+    ) -> Item:
+        mod: dict = {
+            "arg": arg,
+            "subtitle": subtitle,
+            "valid": valid,
+        }
+        if variables:
+            mod["variables"] = variables
+        self._mods[name] = mod
+        return self
+
     def set_alt_mod(
         self,
         arg: str | None = None,
         subtitle: str | None = None,
         valid: bool = True,
+        variables: dict[str, str] | None = None,
     ) -> Item:
-        self._mods["alt"] = {
-            "arg": arg,
-            "subtitle": subtitle,
-            "valid": valid,
-        }
-        return self
+        return self._set_mod("alt", arg=arg, subtitle=subtitle, valid=valid, variables=variables)
 
     def set_cmd_mod(
         self,
         arg: str | None = None,
         subtitle: str | None = None,
         valid: bool = True,
+        variables: dict[str, str] | None = None,
     ) -> Item:
-        self._mods["cmd"] = {
-            "arg": arg,
-            "subtitle": subtitle,
-            "valid": valid,
-        }
-        return self
+        return self._set_mod("cmd", arg=arg, subtitle=subtitle, valid=valid, variables=variables)
+
+    def set_ctrl_mod(
+        self,
+        arg: str | None = None,
+        subtitle: str | None = None,
+        valid: bool = True,
+        variables: dict[str, str] | None = None,
+    ) -> Item:
+        return self._set_mod("ctrl", arg=arg, subtitle=subtitle, valid=valid, variables=variables)
+
+    def set_shift_mod(
+        self,
+        arg: str | None = None,
+        subtitle: str | None = None,
+        valid: bool = True,
+        variables: dict[str, str] | None = None,
+    ) -> Item:
+        return self._set_mod("shift", arg=arg, subtitle=subtitle, valid=valid, variables=variables)
 
     @property
     def serialized(self) -> dict:
