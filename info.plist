@@ -8,6 +8,19 @@
 	<string>Tools</string>
 	<key>connections</key>
 	<dict>
+		<key>071E0B91-A180-4040-BB8D-40F574207C0D</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>45059AB5-DD42-4292-AE7C-4A37E6BA367D</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 		<key>FAC9CF11-4629-4710-85E3-1651334E92C1</key>
 		<array>
 			<dict>
@@ -15,6 +28,46 @@
 				<string>A045A16F-9199-47FD-B99A-D1C6AFDF7125</string>
 				<key>modifiers</key>
 				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A045A16F-9199-47FD-B99A-D1C6AFDF7125</string>
+				<key>modifiers</key>
+				<integer>262144</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>A045A16F-9199-47FD-B99A-D1C6AFDF7125</string>
+				<key>modifiers</key>
+				<integer>131072</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>071E0B91-A180-4040-BB8D-40F574207C0D</string>
+				<key>modifiers</key>
+				<integer>1048576</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
+				<string>071E0B91-A180-4040-BB8D-40F574207C0D</string>
+				<key>modifiers</key>
+				<integer>524288</integer>
 				<key>modifiersubtext</key>
 				<string></string>
 				<key>vitoclose</key>
@@ -100,11 +153,67 @@
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>0</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 ./dist/create_meeting.py &lt;&lt;'ALFREDEOF'
+{query}
+ALFREDEOF</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>071E0B91-A180-4040-BB8D-40F574207C0D</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>argument</key>
+				<string>'{query}', {variables}</string>
+				<key>cleardebuggertext</key>
+				<false/>
+				<key>processoutputs</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.utility.debug</string>
+			<key>uid</key>
+			<string>45059AB5-DD42-4292-AE7C-4A37E6BA367D</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Check time in multiple timezones. 🌐️</string>
 	<key>uidata</key>
 	<dict>
+		<key>071E0B91-A180-4040-BB8D-40F574207C0D</key>
+		<dict>
+			<key>xpos</key>
+			<real>305</real>
+			<key>ypos</key>
+			<real>415</real>
+		</dict>
+		<key>45059AB5-DD42-4292-AE7C-4A37E6BA367D</key>
+		<dict>
+			<key>xpos</key>
+			<real>485</real>
+			<key>ypos</key>
+			<real>445</real>
+		</dict>
 		<key>A045A16F-9199-47FD-B99A-D1C6AFDF7125</key>
 		<dict>
 			<key>xpos</key>
@@ -1492,6 +1601,79 @@ Original // Replacement
 			<string>textarea</string>
 			<key>variable</key>
 			<string>NAME_REPLACEMENTS</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>google</string>
+				<key>pairs</key>
+				<array>
+					<array>
+						<string>Google Calendar</string>
+						<string>google</string>
+					</array>
+					<array>
+						<string>Outlook</string>
+						<string>outlook</string>
+					</array>
+				</array>
+			</dict>
+			<key>description</key>
+			<string>Calendar app to open when pressing ⌘+Enter on a timezone result.</string>
+			<key>label</key>
+			<string>Default Calendar</string>
+			<key>type</key>
+			<string>popupbutton</string>
+			<key>variable</key>
+			<string>DEFAULT_CALENDAR</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>Google Chrome</string>
+				<key>pairs</key>
+				<array>
+					<array>
+						<string>Google Chrome</string>
+						<string>Google Chrome</string>
+					</array>
+					<array>
+						<string>Microsoft Edge</string>
+						<string>Microsoft Edge</string>
+					</array>
+				</array>
+			</dict>
+			<key>description</key>
+			<string>Browser to open Google Calendar in (useful for separating personal vs work accounts).</string>
+			<key>label</key>
+			<string>Google Calendar Browser</string>
+			<key>type</key>
+			<string>popupbutton</string>
+			<key>variable</key>
+			<string>GCAL_BROWSER</string>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>default</key>
+				<string>30</string>
+				<key>placeholder</key>
+				<string>30</string>
+				<key>required</key>
+				<false/>
+				<key>trim</key>
+				<true/>
+			</dict>
+			<key>description</key>
+			<string>Default meeting duration in minutes.</string>
+			<key>label</key>
+			<string>Meeting Duration (minutes)</string>
+			<key>type</key>
+			<string>textfield</string>
+			<key>variable</key>
+			<string>MEETING_DURATION</string>
 		</dict>
 		<dict>
 			<key>config</key>

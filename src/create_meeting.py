@@ -47,19 +47,20 @@ def build_ics(start: datetime, end: datetime, title: str, tz: str) -> str:
     uid = str(uuid4())
     now_utc = datetime.now(tz=timezone.utc)
 
-    return (
-        "BEGIN:VCALENDAR\r\n"
-        "VERSION:2.0\r\n"
-        "PRODID:-//World Clock//Alfred Workflow//EN\r\n"
-        "BEGIN:VEVENT\r\n"
-        f"UID:{uid}\r\n"
-        f"DTSTAMP:{now_utc.strftime(utc_fmt)}\r\n"
-        f"DTSTART:{start_utc.strftime(utc_fmt)}\r\n"
-        f"DTEND:{end_utc.strftime(utc_fmt)}\r\n"
-        f"SUMMARY:{title}\r\n"
-        "END:VEVENT\r\n"
-        "END:VCALENDAR\r\n"
-    )
+    # .ics spec requires CRLF line endings
+    return f"""\
+BEGIN:VCALENDAR\r
+VERSION:2.0\r
+PRODID:-//World Clock//Alfred Workflow//EN\r
+BEGIN:VEVENT\r
+UID:{uid}\r
+DTSTAMP:{now_utc.strftime(utc_fmt)}\r
+DTSTART:{start_utc.strftime(utc_fmt)}\r
+DTEND:{end_utc.strftime(utc_fmt)}\r
+SUMMARY:{title}\r
+END:VEVENT\r
+END:VCALENDAR\r
+"""
 
 
 def open_meeting(start: datetime, duration_min: int, title: str, tz: str, app: str) -> None:

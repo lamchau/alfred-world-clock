@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import sys
 from datetime import datetime, timedelta, timezone
@@ -158,10 +159,16 @@ def main(workflow: Workflow):
         location = tz_name.split("/")[-1].replace("_", " ")
         location = name_replacements.get(location, location)
 
+        meeting_arg = json.dumps({
+            "iso": now.isoformat(),
+            "tz": tz_name,
+            "location": location,
+        })
+
         workflow.new_item(
             title=formatter(now),
             subtitle="{flag} {location} {home_offset}".format(
-                flag=data.flags.get(tz_name, "🌐"),
+                flag=data.flags.get(tz_name, "\U0001f310"),
                 location=location,
                 home_offset=helpers.get_home_offset_str(
                     timezone=tz_name,
@@ -172,7 +179,7 @@ def main(workflow: Workflow):
             ),
             arg="{now} {flag} {location} {home_offset}".format(
                 now=formatter(now),
-                flag=data.flags.get(tz_name, "🌐"),
+                flag=data.flags.get(tz_name, "\U0001f310"),
                 location=location,
                 home_offset=helpers.get_home_offset_str(
                     timezone=tz_name,
@@ -187,10 +194,18 @@ def main(workflow: Workflow):
             uid=str(uuid4()),
         ).set_icon_file(
             path=helpers.get_icon(tz_name, now, home_tz),
+        ).set_cmd_mod(
+            subtitle="\U0001f4c5 Create meeting (default calendar)",
+            arg=meeting_arg,
+            variables={"calendar": "default"},
         ).set_alt_mod(
+            subtitle="\U0001f4c5 Create meeting (other calendar)",
+            arg=meeting_arg,
+            variables={"calendar": "other"},
+        ).set_ctrl_mod(
             subtitle="Copy ISO format (with microseconds)",
             arg=formatters.iso8601(now),
-        ).set_cmd_mod(
+        ).set_shift_mod(
             subtitle="Copy ISO format (without microseconds)",
             arg=formatters.iso8601_without_microseconds(now),
         )
