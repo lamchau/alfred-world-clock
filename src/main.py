@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
@@ -41,13 +42,56 @@ def convert_to_date(date_arg: str) -> tuple[int, int, int]:
 
 _TIMEPARSE_RE = re.compile(
     r"""
-    (?:(\d+(?:\.\d+)?)\s*h(?:(?:ou)?rs?)?)?\s*  # hours: 3h, 3.5h, 3hr, 3hrs, 3hours
+    (?:(\d+(?:\.\d+)?)\s*h(?:(?:ou)?rs?)?)?\s*   # hours: 3h, 3.5h, 3hr, 3hrs, 3hours
     (?:(\d+(?:\.\d+)?)\s*m(?:in(?:ute)?s?)?)?\s* # minutes: 30m, 1.5m, 30min, 30minutes
     (?:(\d+(?:\.\d+)?)\s*s(?:ec(?:ond)?s?)?)?     # seconds: 90s, 90sec, 90seconds
     $
     """,
     re.IGNORECASE | re.VERBOSE,
 )
+
+# calendar-length units that require gdate for correct arithmetic
+_CALENDAR_UNIT_RE = re.compile(
+    r"\d\s*(?:d(?:ays?)?|w(?:(?:ee)?ks?)?|months?|years?)\b",
+    re.IGNORECASE,
+)
+
+# expand short duration units to full words for gdate compatibility
+_UNIT_EXPAND_RE = re.compile(
+    r"(\d+(?:\.\d+)?)\s*"
+    r"(months?|minutes?|mins?|"         # months before m/min to avoid "minutesonths"
+    r"years?|weeks?|wks?|days?|"
+    r"h(?:(?:ou)?rs?)?|"
+    r"m|"                                # bare "m" for minutes (after months/minutes matched)
+    r"s(?:ec(?:ond)?s?)?|"
+    r"d|w)",                             # bare d/w
+    re.IGNORECASE,
+)
+
+_UNIT_MAP = {
+    "h": "hours", "hr": "hours", "hrs": "hours", "hour": "hours", "hours": "hours",
+    "m": "minutes", "min": "minutes", "mins": "minutes", "minute": "minutes", "minutes": "minutes",
+    "s": "seconds", "sec": "seconds", "secs": "seconds", "second": "seconds", "seconds": "seconds",
+    "d": "days", "day": "days", "days": "days",
+    "w": "weeks", "wk": "weeks", "wks": "weeks", "week": "weeks", "weeks": "weeks",
+    "month": "months", "months": "months",
+    "year": "years", "years": "years",
+}
+
+GDATE = "/opt/homebrew/bin/gdate"
+
+
+def expand_units(s: str) -> str:
+    """expand short duration units to full words for gdate compatibility.
+
+    e.g. "2 days 3h 22m" → "2 days 3 hours 22 minutes"
+    """
+    def replace(match: re.Match) -> str:
+        num = match.group(1)
+        unit = _UNIT_MAP.get(match.group(2).lower(), match.group(2))
+        return f"{num} {unit}"
+
+    return _UNIT_EXPAND_RE.sub(replace, s)
 
 # matches H:MM or HH:MM as a duration (distinguished from clock time by context)
 _DURATION_COLON_RE = re.compile(r"^(\d{1,2}):(\d{2})$")
@@ -94,6 +138,29 @@ def is_duration(s: str) -> bool:
     return timeparse(s) is not None
 
 
+def has_calendar_units(s: str) -> bool:
+    """check if a string contains calendar-length units (days, weeks, months, years)."""
+    return bool(_CALENDAR_UNIT_RE.search(s))
+
+
+def gdate_parse(expr: str) -> datetime:
+    """use gdate to parse a relative date expression into a UTC datetime.
+
+    supports anything gdate -d accepts: "3 months", "2 weeks 3 days",
+    "next friday", "-1 year 6 months", etc. Short units (3h, 22m) are
+    expanded to full words (3 hours, 22 minutes) for gdate compatibility.
+    """
+    expanded = expand_units(expr)
+    result = subprocess.run(
+        [GDATE, "-d", expanded, "+%Y-%m-%dT%H:%M:%S%:z"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise ValueError(f"gdate could not parse: {expr!r}")
+    return datetime.fromisoformat(result.stdout.strip()).astimezone(timezone.utc)
+
+
 # parse a positive or negative time offset to create a delta in seconds
 def convert_to_delta(delta_arg: str) -> timedelta:
     seconds = timeparse(delta_arg)
@@ -105,12 +172,20 @@ def convert_to_delta(delta_arg: str) -> timedelta:
 
 # parse arguments to find in which mode the workflow is running (always returns utc datetime)
 def parse_args(args: list[str], home_now: datetime) -> datetime:
-    if len(args) > 2:
-        raise ValueError("too many params, expected: [+offset] / [-offset] / [time] / [time date]")
-
     # mode now: shows current time
     if len(args) == 0:
         return datetime.now(timezone.utc)
+
+    # join all args so "3 months" (split by Alfred) is treated as one expression
+    joined = " ".join(args)
+
+    # mode gdate: calendar-length units (days, weeks, months, years) → gdate
+    if has_calendar_units(joined):
+        return gdate_parse(joined)
+
+    # from here, only single-arg modes
+    if len(args) > 2:
+        raise ValueError("too many params, expected: [+offset] / [-offset] / [time] / [time date]")
 
     # mode offset: shows current time +/- a time offset
     if args[0][0] in "+-":

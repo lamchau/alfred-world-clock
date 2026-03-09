@@ -1,8 +1,8 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from main import convert_to_time, convert_to_date, convert_to_delta, timeparse, is_duration
+from main import convert_to_time, convert_to_date, convert_to_delta, timeparse, is_duration, has_calendar_units, gdate_parse, expand_units
 
 
 class TestConvertToTime:
@@ -171,6 +171,106 @@ class TestIsDuration:
     def test_not_duration(self):
         assert is_duration("hello") is False
         assert is_duration("123") is False
+
+
+class TestExpandUnits:
+    def test_short_hours(self):
+        assert expand_units("3h") == "3 hours"
+
+    def test_short_minutes(self):
+        assert expand_units("22m") == "22 minutes"
+
+    def test_short_seconds(self):
+        assert expand_units("90s") == "90 seconds"
+
+    def test_mixed(self):
+        assert expand_units("2 days 3h 22m") == "2 days 3 hours 22 minutes"
+
+    def test_short_days(self):
+        assert expand_units("3d") == "3 days"
+
+    def test_short_weeks(self):
+        assert expand_units("2w") == "2 weeks"
+
+    def test_already_long(self):
+        assert expand_units("3 hours 22 minutes") == "3 hours 22 minutes"
+
+    def test_combined_no_spaces(self):
+        assert expand_units("2days3h22m") == "2 days3 hours22 minutes"
+
+    def test_hr_form(self):
+        assert expand_units("3hr") == "3 hours"
+
+    def test_min_form(self):
+        assert expand_units("30min") == "30 minutes"
+
+    def test_sec_form(self):
+        assert expand_units("90sec") == "90 seconds"
+
+
+class TestHasCalendarUnits:
+    def test_days(self):
+        assert has_calendar_units("3 days") is True
+        assert has_calendar_units("1day") is True
+        assert has_calendar_units("3d") is True
+
+    def test_weeks(self):
+        assert has_calendar_units("2 weeks") is True
+        assert has_calendar_units("1week") is True
+        assert has_calendar_units("2w") is True
+
+    def test_months(self):
+        assert has_calendar_units("3 months") is True
+        assert has_calendar_units("1month") is True
+
+    def test_years(self):
+        assert has_calendar_units("1 year") is True
+        assert has_calendar_units("2years") is True
+
+    def test_combined(self):
+        assert has_calendar_units("3 months 2 days") is True
+
+    def test_no_calendar_units(self):
+        assert has_calendar_units("3h") is False
+        assert has_calendar_units("30m") is False
+        assert has_calendar_units("1h30m") is False
+
+
+class TestGdateParse:
+    def test_months(self):
+        result = gdate_parse("3 months")
+        now = datetime.now(timezone.utc)
+        # should be roughly 3 months from now
+        diff = result - now
+        assert 80 < diff.days < 100
+
+    def test_weeks(self):
+        result = gdate_parse("2 weeks")
+        now = datetime.now(timezone.utc)
+        diff = result - now
+        assert 13 <= diff.days <= 15
+
+    def test_days(self):
+        result = gdate_parse("5 days")
+        now = datetime.now(timezone.utc)
+        diff = result - now
+        assert 4 <= diff.days <= 6
+
+    def test_negative(self):
+        result = gdate_parse("-3 months")
+        now = datetime.now(timezone.utc)
+        diff = now - result
+        assert 80 < diff.days < 100
+
+    def test_combined(self):
+        result = gdate_parse("3 months 3 days")
+        now = datetime.now(timezone.utc)
+        diff = result - now
+        assert 83 < diff.days < 103
+
+    def test_invalid_raises(self):
+        with pytest.raises(ValueError, match="gdate could not parse"):
+            gdate_parse("not_a_valid_expression_xyz")
 
 
 class TestConvertToDelta:
