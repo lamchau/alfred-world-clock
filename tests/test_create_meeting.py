@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from create_meeting import build_gcal_url, build_ics

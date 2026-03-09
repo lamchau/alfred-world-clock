@@ -23,9 +23,7 @@ def convert_to_time(time_arg: str) -> tuple[int, int, int]:
         except ValueError:
             pass
 
-    raise ValueError(
-        f"'{time_arg}' should follow the formats 'HH:MM', 'HH:MM:SS', '5pm', or '5:30pm'"
-    )
+    raise ValueError(f"'{time_arg}' should follow the formats 'HH:MM', 'HH:MM:SS', '5pm', or '5:30pm'")
 
 
 # parse parameter to a set of valid date formats
@@ -59,23 +57,43 @@ _CALENDAR_UNIT_RE = re.compile(
 # expand short duration units to full words for gdate compatibility
 _UNIT_EXPAND_RE = re.compile(
     r"(\d+(?:\.\d+)?)\s*"
-    r"(months?|minutes?|mins?|"         # months before m/min to avoid "minutesonths"
+    r"(months?|minutes?|mins?|"  # months before m/min to avoid "minutesonths"
     r"years?|weeks?|wks?|days?|"
     r"h(?:(?:ou)?rs?)?|"
-    r"m|"                                # bare "m" for minutes (after months/minutes matched)
+    r"m|"  # bare "m" for minutes (after months/minutes matched)
     r"s(?:ec(?:ond)?s?)?|"
-    r"d|w)",                             # bare d/w
+    r"d|w)",  # bare d/w
     re.IGNORECASE,
 )
 
 _UNIT_MAP = {
-    "h": "hours", "hr": "hours", "hrs": "hours", "hour": "hours", "hours": "hours",
-    "m": "minutes", "min": "minutes", "mins": "minutes", "minute": "minutes", "minutes": "minutes",
-    "s": "seconds", "sec": "seconds", "secs": "seconds", "second": "seconds", "seconds": "seconds",
-    "d": "days", "day": "days", "days": "days",
-    "w": "weeks", "wk": "weeks", "wks": "weeks", "week": "weeks", "weeks": "weeks",
-    "month": "months", "months": "months",
-    "year": "years", "years": "years",
+    "h": "hours",
+    "hr": "hours",
+    "hrs": "hours",
+    "hour": "hours",
+    "hours": "hours",
+    "m": "minutes",
+    "min": "minutes",
+    "mins": "minutes",
+    "minute": "minutes",
+    "minutes": "minutes",
+    "s": "seconds",
+    "sec": "seconds",
+    "secs": "seconds",
+    "second": "seconds",
+    "seconds": "seconds",
+    "d": "days",
+    "day": "days",
+    "days": "days",
+    "w": "weeks",
+    "wk": "weeks",
+    "wks": "weeks",
+    "week": "weeks",
+    "weeks": "weeks",
+    "month": "months",
+    "months": "months",
+    "year": "years",
+    "years": "years",
 }
 
 GDATE = "/opt/homebrew/bin/gdate"
@@ -86,12 +104,14 @@ def expand_units(s: str) -> str:
 
     e.g. "2 days 3h 22m" → "2 days 3 hours 22 minutes"
     """
+
     def replace(match: re.Match) -> str:
         num = match.group(1)
         unit = _UNIT_MAP.get(match.group(2).lower(), match.group(2))
         return f"{num} {unit}"
 
     return _UNIT_EXPAND_RE.sub(replace, s)
+
 
 # matches H:MM or HH:MM as a duration (distinguished from clock time by context)
 _DURATION_COLON_RE = re.compile(r"^(\d{1,2}):(\d{2})$")
@@ -234,11 +254,13 @@ def main(workflow: Workflow):
         location = tz_name.split("/")[-1].replace("_", " ")
         location = name_replacements.get(location, location)
 
-        meeting_arg = json.dumps({
-            "iso": now.isoformat(),
-            "tz": tz_name,
-            "location": location,
-        })
+        meeting_arg = json.dumps(
+            {
+                "iso": now.isoformat(),
+                "tz": tz_name,
+                "location": location,
+            }
+        )
 
         workflow.new_item(
             title=formatter(now),
