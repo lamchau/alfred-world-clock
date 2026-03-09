@@ -88,3 +88,51 @@ setup:
     fi
 
     echo "linked → $link_path"
+
+# bump version (e.g. just bump major, just bump minor, just bump patch)
+bump level:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    current=$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+    IFS='.' read -r major minor patch <<< "$current"
+
+    case "{{ level }}" in
+        major) major=$((major + 1)); minor=0; patch=0 ;;
+        minor) minor=$((minor + 1)); patch=0 ;;
+        patch) patch=$((patch + 1)) ;;
+        *) echo "[error] expected: major, minor, or patch" >&2; exit 1 ;;
+    esac
+
+    next="$major.$minor.$patch"
+    sed -i '' "s/^version = .*/version = \"$next\"/" pyproject.toml
+    plutil -replace version -string "$next" info.plist
+    echo "bump: $current → $next"
+
+# create a versioned .alfredworkflow release (e.g. just release minor)
+release level:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    just bump "{{ level }}"
+    just check
+    just build
+
+    version=$(grep '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+    bundle_id=$(plutil -extract bundleid raw -o - ./info.plist)
+    name="${bundle_id##*.}"
+    filename="$name.v$version.alfredworkflow"
+
+    echo "packaging $filename..."
+    mkdir -p releases
+    zip -r "releases/$filename" dist img *.png info.plist
+
+    git add pyproject.toml info.plist
+    git commit -m "chore: bump version to $version"
+    git tag -a "v$version" -m "v$version"
+
+    echo ""
+    echo "released $name v$version"
+    echo "  releases/$filename"
+    echo "  tag: v$version"
+    echo ""
+    echo "to publish: git push origin main --tags"
