@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
 
 from pyflow import Workflow
+
+# subprocess is only needed for gdate relative-offset parsing; imported lazily
+# inside gdate_parse() so the common "show current times" path stays fast.
 
 import data
 import formatters
@@ -171,6 +172,8 @@ def gdate_parse(expr: str) -> datetime:
     expanded to full words (3 hours, 22 minutes) for gdate compatibility.
     """
     expanded = expand_units(expr)
+    import subprocess
+
     result = subprocess.run(
         [GDATE, "-d", expanded, "+%Y-%m-%dT%H:%M:%S%:z"],
         capture_output=True,
@@ -250,7 +253,7 @@ def main(workflow: Workflow):
         include=[home_tz],
     )
 
-    for tz_name, now in sorted(timezones.items(), key=lambda kw: kw[1].isoformat()):
+    for index, (tz_name, now) in enumerate(sorted(timezones.items(), key=lambda kw: kw[1].isoformat())):
         location = tz_name.split("/")[-1].replace("_", " ")
         location = name_replacements.get(location, location)
 
@@ -288,7 +291,7 @@ def main(workflow: Workflow):
             ),
             copytext=formatter(now),
             valid=True,
-            uid=str(uuid4()),
+            uid=f"{tz_name}#{index}",
         ).set_icon_file(
             path=helpers.get_icon(tz_name, now, home_tz),
         ).set_cmd_mod(

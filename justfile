@@ -69,7 +69,9 @@ setup:
     fi
 
     # resolve absolute path and verify info.plist exists here
-    repo_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+    # just runs recipes from a temp file, so BASH_SOURCE points at /tmp;
+    # justfile_directory() reliably resolves the repo root instead
+    repo_dir="{{ justfile_directory() }}"
     if [[ ! -f "$repo_dir/info.plist" ]]; then
         echo "[error] info.plist not found in $repo_dir — are you in the repo root?" >&2
         exit 1
