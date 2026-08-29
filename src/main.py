@@ -311,8 +311,12 @@ def main(workflow: Workflow):
         )
 
 
-if __name__ == "__main__":
+def run() -> None:
     wf = Workflow()
     wf.run(main)
     wf.send_feedback()
+
+
+if __name__ == "__main__":
+    run()
     sys.exit()
